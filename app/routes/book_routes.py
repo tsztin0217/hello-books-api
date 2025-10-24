@@ -49,6 +49,38 @@ def create_book():
     # Return the response with status code 201 (Created)
     return response, 201
 
+# Decorator: Register this function to handle GET requests to /books
+@books_bp.get("")
+def get_all_books():
+    # Build a SQL query to select all Book records from the database
+    # order_by(Book.id) sorts them by ID in ascending order (1, 2, 3...)
+    query = db.select(Book).order_by(Book.id)
+    
+    # Execute the query and get the results as Book objects
+    # scalars() returns the actual Book objects (not raw database rows)
+    books = db.session.scalars(query)
+    # We could also write the line above as:
+    # books = db.session.execute(query).scalars()
+
+    # Create an empty list to hold the book data in dictionary format
+    books_response = []
+    
+    # Loop through each Book object returned from the database
+    for book in books:
+        # Convert each Book object into a dictionary and add it to the list
+        books_response.append(
+            {
+                "id": book.id,              # The book's database ID
+                "title": book.title,        # The book's title
+                "description": book.description  # The book's description
+            }
+        )
+    
+    # Return the list of book dictionaries as JSON (Flask auto-converts)
+    # Status code defaults to 200 (OK) if not specified
+    return books_response
+
+
 # @books_bp.get("")
 # def get_all_books():
 #     books_response = []
