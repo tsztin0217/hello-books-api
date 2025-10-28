@@ -2,7 +2,7 @@
 # Import abort to stop execution and return error responses
 # Import make_response to create custom HTTP responses
 # Import request to access incoming HTTP request data
-from flask import Blueprint, abort, make_response, request
+from flask import Blueprint, abort, make_response, request, Response
 
 # Import the Book model class to create new book instances
 from app.models.book import Book
@@ -80,31 +80,108 @@ def get_all_books():
     # Status code defaults to 200 (OK) if not specified
     return books_response
 
+# Decorator: Register this function to handle GET requests to /books/<book_id>
+# <book_id> is a URL parameter - captures the ID from the URL
+# Example: GET /books/1 → book_id = "1" (as string)
 @books_bp.get("/<book_id>")
 def get_one_book(book_id):
+    # Call validate_book to check if book_id is valid and book exists
+    # If validation fails, validate_book will abort with 400 or 404 error
+    # If successful, returns the Book object from database
     book = validate_book(book_id)
 
+    # Build and return a dictionary with the book's data
+    # Flask automatically converts this dictionary to JSON
+    # Status code defaults to 200 (OK)
     return {
-        "id": book.id,
-        "title": book.title,
-        "description": book.description,
+        "id": book.id,                      # The book's database ID
+        "title": book.title,                # The book's title
+        "description": book.description,    # The book's description
     }
 
+# Helper function to validate book_id and retrieve the book from database
+# Used by get_one_book and update_book to avoid code duplication
+# Returns: Book object if found, or aborts with error if invalid/not found
 def validate_book(book_id):
+    # STEP 1: Validate that book_id is a valid integer
     try:
+        # Try to convert book_id from string to integer
+        # book_id comes from URL as string (e.g., "1", "abc", "12.5")
         book_id = int(book_id)
     except:
+        # If conversion fails (e.g., "abc", "hello"), this block runs
+        # Create an error message dictionary
         response = {"message": f"book {book_id} invalid"}
+        # abort() stops execution and returns 400 Bad Request error
+        # make_response() creates HTTP response with our message and status code
         abort(make_response(response , 400))
 
+    # STEP 2: Query the database to find the book with this ID
+    # Build a SQL query: SELECT * FROM book WHERE id = book_id
     query = db.select(Book).where(Book.id == book_id)
+    
+    # Execute the query and get a single result (or None if not found)
+    # scalar() returns one Book object or None (unlike scalars() which returns multiple)
     book = db.session.scalar(query)
     
+    # STEP 3: Check if book was found in database
     if not book:
+        # Book doesn't exist - create error message
         response = {"message": f"book {book_id} not found"}
+        # abort() stops execution and returns 404 Not Found error
         abort(make_response(response, 404))
 
+    # STEP 4: Book is valid and exists - return it
+    # This Book object will be used by the calling function
     return book
+
+# Decorator: Register this function to handle PUT requests to /books/<book_id>
+# PUT is used to update/replace an existing resource
+# Example: PUT /books/1 with JSON body → updates book with ID 1
+@books_bp.put("/<book_id>")
+def update_book(book_id):
+    # STEP 1: Validate the book_id and get the existing book from database
+    # If book doesn't exist or ID is invalid, validate_book will abort with error
+    # If successful, we get the Book object that we want to update
+    book = validate_book(book_id)
+    
+    # STEP 2: Get the JSON data from the request body
+    # This contains the new title and description from the client
+    # Example: {"title": "New Title", "description": "New Description"}
+    request_body = request.get_json()
+
+    # STEP 3: Update the book's attributes with new values from request
+    # Extract "title" from request JSON and assign to book.title
+    book.title = request_body["title"]
+    
+    # Extract "description" from request JSON and assign to book.description
+    book.description = request_body["description"]
+    
+    # STEP 4: Save the changes to the database
+    # commit() writes the updated book data to PostgreSQL
+    # No need to call db.session.add() because book already exists in session
+    db.session.commit()
+
+    # STEP 5: Return empty response with 204 No Content status
+    # 204 means "success, but no data to return"
+    # This is standard for PUT/UPDATE operations
+    # mimetype tells client to expect JSON format (even though body is empty)
+    return Response(status=204, mimetype="application/json")
+
+@books_bp.delete("/<book_id>")
+def delete_book(book_id):
+    # STEP 1: Validate the book_id and get the existing book from database
+    book = validate_book(book_id)
+
+    # STEP 2: Delete the book from the database session
+    db.session.delete(book)
+
+    # STEP 3: Commit the changes to permanently remove the book
+    db.session.commit()
+
+    # STEP 4: Return empty response with 204 No Content status
+    return Response(status=204, mimetype="application/json")
+
 
 # @books_bp.get("")
 # def get_all_books():
