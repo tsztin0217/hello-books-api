@@ -52,9 +52,18 @@ def create_book():
 # Decorator: Register this function to handle GET requests to /books
 @books_bp.get("")
 def get_all_books():
-    # Build a SQL query to select all Book records from the database
-    # order_by(Book.id) sorts them by ID in ascending order (1, 2, 3...)
-    query = db.select(Book).order_by(Book.id)
+    query = db.select(Book)
+
+    title_param = request.args.get("title")
+    if title_param:
+        query = query.where(Book.title.ilike(f"%{title_param}%"))
+    
+    description_param = request.args.get("description")
+    if description_param:
+        query = query.where(Book.description.ilike(f"%{description_param}%"))
+    
+    query = query.order_by(Book.id)
+    
     
     # Execute the query and get the results as Book objects
     # scalars() returns the actual Book objects (not raw database rows)
