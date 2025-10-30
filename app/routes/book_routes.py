@@ -50,18 +50,45 @@ def create_book():
     return response, 201
 
 # Decorator: Register this function to handle GET requests to /books
+# Supports optional query parameters for filtering
+# Example: GET /books?title=Harry&description=magic
 @books_bp.get("")
 def get_all_books():
+    # STEP 1: Start building the SQL query to select all books
+    # This is the base query that will be modified based on query parameters
     query = db.select(Book)
 
+    # STEP 2: Check for 'title' query parameter and filter if present
+    # request.args.get("title") retrieves the value from URL query string
+    # Example URL: /books?title=Harry → title_param = "Harry"
+    # Example URL: /books → title_param = None (parameter not provided)
+    # get() returns None if parameter doesn't exist (won't raise error)
     title_param = request.args.get("title")
+    
+    # If title_param exists (user provided ?title=something in URL)
     if title_param:
+        # Add a WHERE clause to filter books by title
+        # ilike() = case-insensitive LIKE search (works in PostgreSQL)
+        # % is wildcard - matches any characters
+        # Example: "%Harry%" matches "Harry Potter", "The Harry", "harry"
         query = query.where(Book.title.ilike(f"%{title_param}%"))
     
+    # STEP 3: Check for 'description' query parameter and filter if present
+    # request.args.get("description") retrieves description from query string
+    # Example URL: /books?description=magic → description_param = "magic"
+    # Can combine with title: /books?title=Harry&description=wizard
     description_param = request.args.get("description")
+    
+    # If description_param exists (user provided ?description=something)
     if description_param:
+        # Add another WHERE clause to filter by description
+        # This combines with title filter if both are provided (AND logic)
+        # ilike() is case-insensitive pattern matching
         query = query.where(Book.description.ilike(f"%{description_param}%"))
     
+    # STEP 4: Add ORDER BY clause to sort results by ID
+    # This happens after all filters are applied
+    # Results will be sorted in ascending order (1, 2, 3, ...)
     query = query.order_by(Book.id)
     
     

@@ -12,8 +12,10 @@ from .routes.book_routes import books_bp
 # Old hello world routes (commented out)
 # from .routes.hello_world_routes import hello_world_bp
 
+import os
+
 # Application factory function - creates and configures the Flask app
-def create_app():
+def create_app(config=None):
     # Create a new Flask application instance
     # __name__ tells Flask where to find resources (templates, static files)
     app = Flask(__name__)
@@ -29,7 +31,12 @@ def create_app():
     # postgres:postgres = username:password for database
     # localhost:5432 = database server location (local computer, default PostgreSQL port)
     # hello_books_development = name of the database to use
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:postgres@localhost:5432/hello_books_development'
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
+
+    if config:
+        # Merge `config` into the app's configuration
+        # to override the app's default settings
+        app.config.update(config)
 
     # Initialize the database with this Flask app
     # Connects SQLAlchemy to the Flask app
