@@ -9,6 +9,7 @@ from app.models.book import Book
 
 # Import db to interact with the database (add, commit, query, etc.)
 from ..db import db
+from .route_utilities import validate_model
 
 # Old import when using in-memory list (now using database instead)
 # from app.models.book import books
@@ -139,38 +140,38 @@ def get_one_book(book_id):
 # Helper function to validate book_id and retrieve the book from database
 # Used by get_one_book and update_book to avoid code duplication
 # Returns: Book object if found, or aborts with error if invalid/not found
-def validate_model(cls, model_id):
-    # STEP 1: Validate that book_id is a valid integer
-    try:
-        # Try to convert book_id from string to integer
-        # book_id comes from URL as string (e.g., "1", "abc", "12.5")
-        model_id = int(model_id)
-    except:
-        # If conversion fails (e.g., "abc", "hello"), this block runs
-        # Create an error message dictionary
-        response = {"message": f"{cls.__name__} {model_id} invalid"}
-        # abort() stops execution and returns 400 Bad Request error
-        # make_response() creates HTTP response with our message and status code
-        abort(make_response(response , 400))
+# def validate_model(cls, model_id):
+#     # STEP 1: Validate that book_id is a valid integer
+#     try:
+#         # Try to convert book_id from string to integer
+#         # book_id comes from URL as string (e.g., "1", "abc", "12.5")
+#         model_id = int(model_id)
+#     except:
+#         # If conversion fails (e.g., "abc", "hello"), this block runs
+#         # Create an error message dictionary
+#         response = {"message": f"{cls.__name__} {model_id} invalid"}
+#         # abort() stops execution and returns 400 Bad Request error
+#         # make_response() creates HTTP response with our message and status code
+#         abort(make_response(response , 400))
 
-    # STEP 2: Query the database to find the book with this ID
-    # Build a SQL query: SELECT * FROM book WHERE id = book_id
-    query = db.select(cls).where(cls.id == model_id)
+#     # STEP 2: Query the database to find the book with this ID
+#     # Build a SQL query: SELECT * FROM book WHERE id = book_id
+#     query = db.select(cls).where(cls.id == model_id)
     
-    # Execute the query and get a single result (or None if not found)
-    # scalar() returns one Book object or None (unlike scalars() which returns multiple)
-    book = db.session.scalar(query)
+#     # Execute the query and get a single result (or None if not found)
+#     # scalar() returns one Book object or None (unlike scalars() which returns multiple)
+#     book = db.session.scalar(query)
     
-    # STEP 3: Check if book was found in database
-    if not book:
-        # Book doesn't exist - create error message
-        response = {"message": f"{cls.__name__} {model_id} not found"}
-        # abort() stops execution and returns 404 Not Found error
-        abort(make_response(response, 404))
+#     # STEP 3: Check if book was found in database
+#     if not book:
+#         # Book doesn't exist - create error message
+#         response = {"message": f"{cls.__name__} {model_id} not found"}
+#         # abort() stops execution and returns 404 Not Found error
+#         abort(make_response(response, 404))
 
-    # STEP 4: Book is valid and exists - return it
-    # This Book object will be used by the calling function
-    return book
+#     # STEP 4: Book is valid and exists - return it
+#     # This Book object will be used by the calling function
+#     return book
 
 # Decorator: Register this function to handle PUT requests to /books/<book_id>
 # PUT is used to update/replace an existing resource

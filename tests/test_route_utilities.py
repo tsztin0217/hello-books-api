@@ -1,7 +1,7 @@
 from werkzeug.exceptions import HTTPException
 import pytest
 from app.models.book import Book
-from app.routes.book_routes import validate_model
+from app.routes.route_utilities import validate_model
 
 def test_validate_model(two_saved_books):
     # Act
