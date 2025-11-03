@@ -124,7 +124,7 @@ def get_one_book(book_id):
     # Call validate_book to check if book_id is valid and book exists
     # If validation fails, validate_book will abort with 400 or 404 error
     # If successful, returns the Book object from database
-    book = validate_book(book_id)
+    book = validate_model(Book, book_id)
 
     # Build and return a dictionary with the book's data
     # Flask automatically converts this dictionary to JSON
@@ -139,23 +139,23 @@ def get_one_book(book_id):
 # Helper function to validate book_id and retrieve the book from database
 # Used by get_one_book and update_book to avoid code duplication
 # Returns: Book object if found, or aborts with error if invalid/not found
-def validate_book(book_id):
+def validate_model(cls, model_id):
     # STEP 1: Validate that book_id is a valid integer
     try:
         # Try to convert book_id from string to integer
         # book_id comes from URL as string (e.g., "1", "abc", "12.5")
-        book_id = int(book_id)
+        model_id = int(model_id)
     except:
         # If conversion fails (e.g., "abc", "hello"), this block runs
         # Create an error message dictionary
-        response = {"message": f"book {book_id} invalid"}
+        response = {"message": f"{cls.__name__} {model_id} invalid"}
         # abort() stops execution and returns 400 Bad Request error
         # make_response() creates HTTP response with our message and status code
         abort(make_response(response , 400))
 
     # STEP 2: Query the database to find the book with this ID
     # Build a SQL query: SELECT * FROM book WHERE id = book_id
-    query = db.select(Book).where(Book.id == book_id)
+    query = db.select(cls).where(cls.id == model_id)
     
     # Execute the query and get a single result (or None if not found)
     # scalar() returns one Book object or None (unlike scalars() which returns multiple)
@@ -164,7 +164,7 @@ def validate_book(book_id):
     # STEP 3: Check if book was found in database
     if not book:
         # Book doesn't exist - create error message
-        response = {"message": f"book {book_id} not found"}
+        response = {"message": f"{cls.__name__} {model_id} not found"}
         # abort() stops execution and returns 404 Not Found error
         abort(make_response(response, 404))
 
@@ -180,7 +180,7 @@ def update_book(book_id):
     # STEP 1: Validate the book_id and get the existing book from database
     # If book doesn't exist or ID is invalid, validate_book will abort with error
     # If successful, we get the Book object that we want to update
-    book = validate_book(book_id)
+    book = validate_model(Book, book_id)
     
     # STEP 2: Get the JSON data from the request body
     # This contains the new title and description from the client
@@ -208,7 +208,7 @@ def update_book(book_id):
 @books_bp.delete("/<book_id>")
 def delete_book(book_id):
     # STEP 1: Validate the book_id and get the existing book from database
-    book = validate_book(book_id)
+    book = validate_model(Book, book_id)
 
     # STEP 2: Delete the book from the database session
     db.session.delete(book)
