@@ -8,7 +8,7 @@ from .db import db, migrate
 from .models import book
 
 # Import the books blueprint containing all book-related routes
-from .routes.book_routes import books_bp
+from .routes.book_routes import bp as books_bp
 # Old hello world routes (commented out)
 # from .routes.hello_world_routes import hello_world_bp
 

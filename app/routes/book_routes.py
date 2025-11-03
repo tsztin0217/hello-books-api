@@ -16,10 +16,10 @@ from .route_utilities import validate_model
 
 # Create a Blueprint named "books" with URL prefix "/books"
 # All routes in this blueprint will start with /books
-books_bp = Blueprint("books_dp", __name__, url_prefix="/books")
+bp = Blueprint("books_bp", __name__, url_prefix="/books")
 
 # Decorator: Register this function to handle POST requests to /books
-@books_bp.post("")
+@bp.post("")
 def create_book():
     # Get the JSON data from the incoming request body
     request_body = request.get_json()
@@ -50,7 +50,7 @@ def create_book():
 # Decorator: Register this function to handle GET requests to /books
 # Supports optional query parameters for filtering
 # Example: GET /books?title=Harry&description=magic
-@books_bp.get("")
+@bp.get("")
 def get_all_books():
     # STEP 1: Start building the SQL query to select all books
     # This is the base query that will be modified based on query parameters
@@ -120,7 +120,7 @@ def get_all_books():
 # Decorator: Register this function to handle GET requests to /books/<book_id>
 # <book_id> is a URL parameter - captures the ID from the URL
 # Example: GET /books/1 → book_id = "1" (as string)
-@books_bp.get("/<book_id>")
+@bp.get("/<book_id>")
 def get_one_book(book_id):
     # Call validate_book to check if book_id is valid and book exists
     # If validation fails, validate_book will abort with 400 or 404 error
@@ -176,7 +176,7 @@ def get_one_book(book_id):
 # Decorator: Register this function to handle PUT requests to /books/<book_id>
 # PUT is used to update/replace an existing resource
 # Example: PUT /books/1 with JSON body → updates book with ID 1
-@books_bp.put("/<book_id>")
+@bp.put("/<book_id>")
 def update_book(book_id):
     # STEP 1: Validate the book_id and get the existing book from database
     # If book doesn't exist or ID is invalid, validate_book will abort with error
@@ -206,7 +206,7 @@ def update_book(book_id):
     # mimetype tells client to expect JSON format (even though body is empty)
     return Response(status=204, mimetype="application/json")
 
-@books_bp.delete("/<book_id>")
+@bp.delete("/<book_id>")
 def delete_book(book_id):
     # STEP 1: Validate the book_id and get the existing book from database
     book = validate_model(Book, book_id)
