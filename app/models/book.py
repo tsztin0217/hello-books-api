@@ -46,3 +46,12 @@ class Book(db.Model):
         new_book = Book(title=book_data["title"],
                         description=book_data["description"])
         return new_book
+    
+    # indented under the Book class definition
+    def to_dict(self):
+        book_as_dict = {}
+        book_as_dict["id"] = self.id
+        book_as_dict["title"] = self.title
+        book_as_dict["description"] = self.description
+
+        return book_as_dict

@@ -36,11 +36,12 @@ def create_book():
     db.session.commit()
 
     # Create a response dictionary with the new book's data
-    response = {
-        "id": new_book.id,              # Auto-generated database ID
-        "title": new_book.title,        # The book's title
-        "description": new_book.description,  # The book's description
-    }
+    # response = {
+    #     "id": new_book.id,              # Auto-generated database ID
+    #     "title": new_book.title,        # The book's title
+    #     "description": new_book.description,  # The book's description
+    # }
+    response = new_book.to_dict()
 
     # Return the response with status code 201 (Created)
     return response, 201
@@ -97,16 +98,19 @@ def get_all_books():
     # Create an empty list to hold the book data in dictionary format
     books_response = []
     
-    # Loop through each Book object returned from the database
+    # # Loop through each Book object returned from the database
+    # for book in books:
+    #     # Convert each Book object into a dictionary and add it to the list
+    #     books_response.append(
+    #         {
+    #             "id": book.id,              # The book's database ID
+    #             "title": book.title,        # The book's title
+    #             "description": book.description  # The book's description
+    #         }
+    #     )
+
     for book in books:
-        # Convert each Book object into a dictionary and add it to the list
-        books_response.append(
-            {
-                "id": book.id,              # The book's database ID
-                "title": book.title,        # The book's title
-                "description": book.description  # The book's description
-            }
-        )
+        books_response.append(book.to_dict())
     
     # Return the list of book dictionaries as JSON (Flask auto-converts)
     # Status code defaults to 200 (OK) if not specified
@@ -125,11 +129,12 @@ def get_one_book(book_id):
     # Build and return a dictionary with the book's data
     # Flask automatically converts this dictionary to JSON
     # Status code defaults to 200 (OK)
-    return {
-        "id": book.id,                      # The book's database ID
-        "title": book.title,                # The book's title
-        "description": book.description,    # The book's description
-    }
+    # return {
+    #     "id": book.id,                      # The book's database ID
+    #     "title": book.title,                # The book's title
+    #     "description": book.description,    # The book's description
+    # }
+    return book.to_dict()
 
 # Helper function to validate book_id and retrieve the book from database
 # Used by get_one_book and update_book to avoid code duplication
