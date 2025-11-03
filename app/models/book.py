@@ -39,3 +39,10 @@ class Book(db.Model):
     # Mapped[str] = type hint (this column stores strings/text)
     # No additional options = this is a required field
     description: Mapped[str]
+
+    # indented under the Book class definition
+    @classmethod
+    def from_dict(cls, book_data):
+        new_book = Book(title=book_data["title"],
+                        description=book_data["description"])
+        return new_book
