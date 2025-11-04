@@ -9,6 +9,8 @@ from .models import book
 
 # Import the books blueprint containing all book-related routes
 from .routes.book_routes import bp as books_bp
+from .routes.author_routes import bp as authors_bp
+
 # Old hello world routes (commented out)
 # from .routes.hello_world_routes import hello_world_bp
 
@@ -52,6 +54,7 @@ def create_app(config=None):
     
     # Register the books blueprint - makes all /books routes available
     app.register_blueprint(books_bp)
+    app.register_blueprint(authors_bp)
 
     # Return the fully configured Flask application
     return app
